@@ -2,7 +2,7 @@ from snps import SNPs
 import os
 import errno
 import gzip
-
+import math
 
 
 '''gene_path = input("Input path to user genomic file: ") 
@@ -36,11 +36,25 @@ def build_snp_weight_dictionary(file_path):
 				snp_weigh_dictionary[field[0]] = (field[effect_allele_idx], field[effect_weight_idx])
 	return snp_weigh_dictionary
 
+def count_effective_allele(eff_allele, genotype):
+	if type(genotype) == str:
+		return genotype.count(eff_allele)
+	else:
+		return 0
+
 
 trait_path = "trait/bmi/PGS000298.txt.GZ"
-gene_path = "data/9876.23andme.8136"
+gene_path = "data/9863.ancestry.8117"
 s = SNPs(gene_path)
 snp_weigh_dictionary = {}
 df = s.snps
 weight_dictionary = build_snp_weight_dictionary(trait_path)
-print(weight_dictionary)
+score = 0
+for row in df.iterrows():
+	snp, genotype = row[0], row[1][2]
+	if snp in weight_dictionary:
+		eff_allele, snp_weight = weight_dictionary[snp]
+		score += count_effective_allele(eff_allele, genotype) * float(snp_weight)
+print(score)
+ 
+#ADD IA_RECESSIVE ...
